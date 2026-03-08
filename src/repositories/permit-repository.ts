@@ -15,31 +15,15 @@ import {
   PermitFee,
 } from "../models/permit-application.js";
 import { logger } from "../lib/logger.js";
+import {
+  PaginationOptions,
+  PaginatedResult,
+  normalizePaginationOptions,
+  buildPaginationMetadata,
+} from "../types/pagination.js";
 
-/**
- * Pagination options for list queries.
- */
-export interface PaginationOptions {
-  /** Page number (1-based) */
-  page?: number;
-  /** Items per page (default: 25, max: 100) */
-  limit?: number;
-}
-
-/**
- * Paginated result interface.
- */
-export interface PaginatedResult<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrevious: boolean;
-  };
-}
+// Re-export pagination types for convenience
+export type { PaginationOptions, PaginatedResult } from "../types/pagination.js";
 
 /**
  * Create a new permit application.
@@ -133,9 +117,7 @@ export async function listPermitApplicationsByApplicant(
   options: PaginationOptions = {}
 ): Promise<PaginatedResult<PermitApplication>> {
   const container = getApplicationsContainer();
-  const page = Math.max(1, options.page ?? 1);
-  const limit = Math.min(100, Math.max(1, options.limit ?? 25));
-  const offset = (page - 1) * limit;
+  const { page, limit, offset } = normalizePaginationOptions(options);
 
   // Count total items
   const countQuery = {
@@ -161,33 +143,23 @@ export async function listPermitApplicationsByApplicant(
     .query<PermitApplication>(querySpec)
     .fetchAll();
 
-  const totalPages = Math.ceil(total / limit);
-
   return {
     data: resources,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages,
-      hasNext: page < totalPages,
-      hasPrevious: page > 1,
-    },
+    pagination: buildPaginationMetadata(page, limit, total),
   };
 }
 
 /**
  * List permit applications by status.
  * Cross-partition query for reviewer workflows.
+ * Note: Cross-partition queries may have higher RU costs at scale.
  */
 export async function listPermitApplicationsByStatus(
   status: PermitApplicationStatus,
   options: PaginationOptions = {}
 ): Promise<PaginatedResult<PermitApplication>> {
   const container = getApplicationsContainer();
-  const page = Math.max(1, options.page ?? 1);
-  const limit = Math.min(100, Math.max(1, options.limit ?? 25));
-  const offset = (page - 1) * limit;
+  const { page, limit, offset } = normalizePaginationOptions(options);
 
   // Count total items
   const countQuery = {
@@ -213,18 +185,9 @@ export async function listPermitApplicationsByStatus(
     .query<PermitApplication>(querySpec)
     .fetchAll();
 
-  const totalPages = Math.ceil(total / limit);
-
   return {
     data: resources,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages,
-      hasNext: page < totalPages,
-      hasPrevious: page > 1,
-    },
+    pagination: buildPaginationMetadata(page, limit, total),
   };
 }
 

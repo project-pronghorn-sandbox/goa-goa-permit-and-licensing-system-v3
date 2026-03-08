@@ -10,31 +10,12 @@ import {
   UpdatePermitTypeInput,
 } from "../models/permit-type.js";
 import { logger } from "../lib/logger.js";
-
-/**
- * Pagination options for list queries.
- */
-export interface PaginationOptions {
-  /** Page number (1-based) */
-  page?: number;
-  /** Items per page (default: 25, max: 100) */
-  limit?: number;
-}
-
-/**
- * Paginated result interface.
- */
-export interface PaginatedResult<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrevious: boolean;
-  };
-}
+import {
+  PaginationOptions,
+  PaginatedResult,
+  normalizePaginationOptions,
+  buildPaginationMetadata,
+} from "../types/pagination.js";
 
 /**
  * Create a new permit type.
@@ -101,9 +82,7 @@ export async function listPermitTypes(
   options: PaginationOptions & { activeOnly?: boolean } = {}
 ): Promise<PaginatedResult<PermitType>> {
   const container = getPermitTypesContainer();
-  const page = Math.max(1, options.page ?? 1);
-  const limit = Math.min(100, Math.max(1, options.limit ?? 25));
-  const offset = (page - 1) * limit;
+  const { page, limit, offset } = normalizePaginationOptions(options);
   const activeOnly = options.activeOnly ?? false;
 
   // Build query based on activeOnly filter
@@ -132,18 +111,9 @@ export async function listPermitTypes(
     .query<PermitType>(querySpec)
     .fetchAll();
 
-  const totalPages = Math.ceil(total / limit);
-
   return {
     data: resources,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages,
-      hasNext: page < totalPages,
-      hasPrevious: page > 1,
-    },
+    pagination: buildPaginationMetadata(page, limit, total),
   };
 }
 
@@ -155,9 +125,7 @@ export async function listPermitTypesByCategory(
   options: PaginationOptions & { activeOnly?: boolean } = {}
 ): Promise<PaginatedResult<PermitType>> {
   const container = getPermitTypesContainer();
-  const page = Math.max(1, options.page ?? 1);
-  const limit = Math.min(100, Math.max(1, options.limit ?? 25));
-  const offset = (page - 1) * limit;
+  const { page, limit, offset } = normalizePaginationOptions(options);
   const activeOnly = options.activeOnly ?? false;
 
   // Build where clause
@@ -189,18 +157,9 @@ export async function listPermitTypesByCategory(
     .query<PermitType>(querySpec)
     .fetchAll();
 
-  const totalPages = Math.ceil(total / limit);
-
   return {
     data: resources,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages,
-      hasNext: page < totalPages,
-      hasPrevious: page > 1,
-    },
+    pagination: buildPaginationMetadata(page, limit, total),
   };
 }
 
