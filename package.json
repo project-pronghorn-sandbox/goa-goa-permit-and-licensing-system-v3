@@ -13,23 +13,29 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "express": "^5.1.0",
+    "@azure/cosmos": "^4.9.1",
+    "@azure/identity": "^4.13.0",
+    "@azure/keyvault-secrets": "^4.10.0",
+    "@azure/monitor-opentelemetry": "^1.16.0",
     "cors": "^2.8.5",
-    "helmet": "^8.1.0",
     "dotenv": "^16.5.0",
+    "express": "^5.1.0",
     "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "uuid": "^13.0.0",
     "winston": "^3.17.0"
   },
   "devDependencies": {
-    "@types/express": "^5.0.2",
     "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.2",
     "@types/node": "^22.0.0",
-    "typescript": "^5.8.0",
-    "tsx": "^4.19.0",
-    "vitest": "^3.2.0",
-    "eslint": "^9.0.0",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0"
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
   },
   "engines": {
     "node": ">=20.0.0"
