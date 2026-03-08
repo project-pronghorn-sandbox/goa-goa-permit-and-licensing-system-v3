@@ -78,12 +78,25 @@ export const assignReviewerSchema = z.object({
 
 /**
  * Schema for document metadata.
+ * Storage URL must be from Azure Blob Storage.
  */
 export const documentSchema = z.object({
   name: z.string().min(1).max(255),
   mimeType: z.string().min(1).max(100),
   sizeBytes: z.number().int().positive().max(100 * 1024 * 1024), // Max 100MB
-  storageUrl: z.string().url(),
+  storageUrl: z.string().url().refine(
+    (url) => {
+      try {
+        const parsed = new URL(url);
+        // Allow Azure Blob Storage URLs only
+        return parsed.protocol === "https:" && 
+          parsed.hostname.endsWith(".blob.core.windows.net");
+      } catch {
+        return false;
+      }
+    },
+    { message: "Storage URL must be a valid Azure Blob Storage URL" }
+  ),
   category: z.string().max(50).optional(),
 });
 

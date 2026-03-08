@@ -166,6 +166,11 @@ export async function listPermitTypesByCategory(
 /**
  * Update a permit type.
  * Uses optimistic concurrency control with version number.
+ * 
+ * Note: For stronger concurrency guarantees in high-contention scenarios,
+ * consider using Cosmos DB's native _etag with the if-match header.
+ * The current implementation checks version in application code which has
+ * a small race window between read and write.
  */
 export async function updatePermitType(
   id: string,
